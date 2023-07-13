@@ -4,8 +4,8 @@
   "version": "0.0.0",
 
   "engines": {
-    "node": "20.0.0",
-    "npm": "9.6.6"
+    "node": "18.0.0",
+    "npm": "8.6.6"
   },
   "scripts": {
     "ng": "ng",
