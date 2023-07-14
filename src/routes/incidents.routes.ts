@@ -1,139 +1,41 @@
-// modules required for routing
-let express = require('express');
-let router = express.Router();
-let mongoose = require('mongoose');
+// External Dependencies
+import express, { Request, Response } from "express";
+import { ObjectId } from "mongodb";
+import { collections } from "../services/database.service";
+import Incident from "../models/incidents"; 
 
-// define the incidents model
-let incidents = require('../models/incidents');
 
-/* GET Incidents List page. READ */
-router.get('/', (req, res, next) => {
-  // find all incidents in the incidents collection
-  incidents.find( (err, incidents) => {
-    if (err) {
-      return console.error(err);
-    }
-    else {
-      res.render('home/home.component.html', {
-        title: 'Incidents',
-        incidents: incidents
+// Global Config
+export const incidentsRouter = express.Router();
+
+incidentsRouter.use(express.json());
+
+// GET
+incidentsRouter.get("/", async (_req: Request, res: Response) => {
+  try {
+      // Check if the collection is connected before trying to use it
+      if (!collections.incidents) {
+          throw new Error("incidents collection is not connected");
+      }
+
+      // Fetch the incidents from the database
+      const incidents = await collections.incidents.find({}).toArray();
+
+      // We map through the results to extract the data we need and create a new Incident array
+      const incidentsMapped = incidents.map(doc => {
+          return new Incident(doc['incidentNumber'], doc['description'], doc['email'], doc['priority'], doc.['customerName'], doc['status'], doc._id);
       });
-    }
-  });
 
+      // Send the incidents as the response
+      res.status(200).send(incidentsMapped);
+  } catch (error) {
+      // Send the error message as the response
+      const err = error as Error;
+      res.status(500).send(err.message);
+  }
 });
+// POST
 
-//  GET the Book Details page in order to add a new Book
-router.get('/add', (req, res, next) => {
+// PUT
 
-  res.render('books/details', {
-    title: 'Add Books Page',
-    books: {} // Insert an empty object 
-  });
-
-});
-
-// POST process the Book Details page and create a new Book - CREATE
-router.post('/add', (req, res, next) => {
-
-  console.log("logging add function", req.body);
-  // Extract the book details from the request body
-  const { title, description, price, author, genre } = req.body;
-
-  // Create a new book object excluding the _id property
-  const newBook = {
-    Title: title,
-    Description: description,
-    Price: price,
-    Author: author,
-    Genre: genre
-  };
-
-  console.log("logging var newBook", JSON.stringify(newBook, null, 2)); // Format log
-  // Use the create to create a new book
-  book.create(newBook)
-    .then(() => {
-      // Redirect the user back to the BookList page
-      res.redirect('/books');
-    })
-    .catch(err => {
-      // Handle errrors
-      console.error(err);
-      next(err);
-    });
-});
-
-// GET the Book Details page in order to edit an existing Book
-router.get('/:id', (req, res, next) => {
-
-
-  // Get ID of the Book
-  const id = new mongoose.Types.ObjectId(req.params.id);
-
-  // Find Book and render Details page
-  book.findById(id, (err, foundBook) => {
-
-    console.log("logging foundBook", foundBook);
-
-    if (err) {
-      console.error(err);
-      next(err);
-    } else {
-      res.render('books/details', {
-        title: 'Book Details',
-        books: foundBook
-      });
-    }
-  });
-});
-
-// POST - process the information passed from the details form and update the document
-router.post('/:id', (req, res, next) => {
-
-    const id = new mongoose.Types.ObjectId(req.params.id);
-
-    const { title, description, price, author, genre } = req.body;
-
-    // Create a new updateBook object excluding the _id property
-    const updateBook = {
-      Title: title,
-      Description: description,
-      Price: price,
-      Author: author,
-      Genre: genre
-    };
-  
-    
-    // Use findByIdAndUpdate to find the updateBook and update it accordingly
-    book.findByIdAndUpdate(id, updateBook)
-      .then(() => {
-        // Redirect the user back to the BookList page
-        res.redirect('/books');
-      })
-      .catch(err => {
-        // Handle any errors that occur during the insertion process
-        console.error(err);
-        next(err);
-      });
-});
-
-// GET - process the delete by user id
-router.get('/delete/:id', (req, res, next) => {
-
-    const id = new mongoose.Types.ObjectId(req.params.id);
-    
-    // Use the findByIDAndDelete to find and delete accordingly
-    book.findByIdAndDelete(id)
-      .then(() => {
-        // Redirect the user back to the BookList page
-        res.redirect('/books');
-      })
-      .catch(err => {
-        // Handle any errors that occur during the insertion process
-        console.error(err);
-        next(err);
-      });
-});
-
-
-module.exports = router;
+// DELETE
