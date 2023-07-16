@@ -1,0 +1,14 @@
+{
+  "name": "group2project",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "20.2.0",
+    "npm": "9.6.6"
+  },
+  "author": "",
+  "license": "ISC"
+}
