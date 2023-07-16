@@ -1,47 +1,26 @@
+require('dotenv').config()
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const cors = require('cors');
+const incidents = require('./routes/incidents');
 const app = express();
+
 
 
 app.use(express.static(path.join(__dirname, '../../frontend/dist/group2project')));
 
-//code here
-var corsOptions = {
-    origin: "https://localhost:8081"
-}; 
+// Mongoose connection
+mongoose.connect(process.env.DB_CONN_STRING, {useNewUrlParser: true, useUnifiedTopology: true});
 
-// app.use(cors(corsOptions));
+let mongoDB = mongoose.connection;
+mongoDB.on('error', console.error.bind(console, 'Connection Error:'));
+mongoDB.once('open', ()=> {
+  console.log("Connected to MongoDB...");
+});
 
-// //parse requests
-// app.use(bodyParser.json());
-
-// //parse requests
-// app.use(bodyParser.urlencoded({ extended: true }));
-
-// const db = require("./models");
-// db.mongoose
-//     .connect(db.url, {
-//         useNewUrlParser: true,
-//         useUnifiedTopology: true
-//     })
-//     .then(() => {
-//         console.log("Connected to Mongoose");
-//     })
-//     .catch(err => {
-//         console.log("Error connecting", err);
-//         process.exit();
-//     });
-
-// //simple route
-// app.get("/", (req, res) => {
-//     res.json({message: "Welcome to the app"});
-// }); 
-
-// require("")
-
+// route redirects for incidents
+app.use('/api/incidents', incidents);
 
 
 app.get('/*', (req, res) => {
